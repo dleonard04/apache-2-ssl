@@ -1,0 +1,90 @@
+#!/bin/sh
+
+case "$1" in
+ configure)
+ ;;
+
+ abort-upgrade|abort-remove|abort-deconfigure)
+  exit 0
+ ;;
+
+ *)
+  echo "postinst called with unknown argument \`$1'" >&2
+  exit 0
+ ;;
+esac
+
+DEBUG=1
+
+dir="/usr/local/apache"
+conf="$dir/conf"
+htdocs="$dir/htdocs"
+https="$dir/https"
+
+if [ ! -f $conf/httpd.conf ]; then
+ if [ $DEBUG -gt 0 ]; then
+  echo "mv $conf/httpd.conf.default $conf/httpd.conf"
+ fi
+ mv $conf/httpd.conf.default $conf/httpd.conf
+fi
+
+if [ ! -f $conf/ssl.conf ]; then
+ if [ $DEBUG -gt 0 ]; then
+  echo "mv $conf/ssl.conf.default $conf/ssl.conf"
+ fi
+ mv $conf/ssl.conf.default $conf/ssl.conf
+fi
+
+if [ ! -f $htdocs/index.html ]; then
+ if [ $DEBUG -gt 0 ]; then
+  echo "mv $htdocs/index.html.default $htdocs/index.html"
+ fi
+ mv $htdocs/index.html.default $htdocs/index.html
+fi
+
+if [ ! -f $https/index.html ]; then
+ if [ $DEBUG -gt 0 ]; then
+  echo "mv $https/index.html.default $https/index.html"
+ fi
+ mv $https/index.html.default $https/index.html
+fi
+
+#########################################################
+# Generate and install self-signed cert
+#########################################################
+
+# Create Certificate Authority (if necessary)
+mkdir -p /etc/ssl/private
+chmod 700 /etc/ssl/private
+if [ ! -f /etc/ssl/private/ca.crt ]; then
+ if [ $DEBUG -gt 0 ]; then
+  echo "Generating Self-Signed Certificate Authority"
+ fi
+ cd /etc/ssl/private
+ openssl genrsa -out ca.key 1024
+ openssl req -new -key ca.key -out ca.csr
+ openssl x509 -req -days 365 -in ca.csr -signkey ca.key -out ca.crt
+fi
+
+# Copy the Cert to the web server location
+mkdir -p $conf/ssl.crt
+if [ ! -f $conf/ssl.crt/ca.crt ]; then
+ if [ $DEBUG -gt 0 ]; then
+  echo "Copying ca.crt to $conf/ssl.crt/."
+ fi
+ cp /etc/ssl/private/ca.crt $conf/ssl.crt/.
+fi
+
+# Create the web server certificate
+if [ ! -f $conf/ssl.crt/server.crt ]; then
+ cd $conf/ssl.crt
+ openssl genrsa -out server.key 1024
+ openssl req -new -key server.key -out server.csr
+ openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
+fi
+
+# Dynamically generated code from dh_installdeb
+
+#DEBHELPER#
+
+exit 0

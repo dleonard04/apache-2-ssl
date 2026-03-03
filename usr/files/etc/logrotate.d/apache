@@ -1,0 +1,41 @@
+/var/log/apache/error_log {
+ missingok
+ rotate 7
+ size 1M
+ compress
+ notifempty
+ nomail
+ delaycompress
+ daily
+ postrotate
+  kill -HUP `cat /var/run/httpd.pid`
+ endscript
+}
+
+/var/log/apache/access_log {
+ missingok
+ rotate 7
+ size 1M
+ compress
+ notifempty
+ nomail
+ delaycompress
+ daily
+ postrotate
+  kill -HUP `cat /var/run/httpd.pid`
+ endscript
+}
+
+/var/log/apache/ssl_request {
+ missingok
+ rotate 7
+ size 1M
+ compress
+ notifempty
+ nomail
+ delaycompress
+ daily
+ postrotate
+  kill -HUP `cat /var/run/httpd.pid`
+ endscript
+}

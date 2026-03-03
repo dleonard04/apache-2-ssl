@@ -1,0 +1,209 @@
+ServerRoot "/usr/local/apache"
+PidFile /var/run/httpd.pid
+Timeout 300
+KeepAlive On
+MaxKeepAliveRequests 100
+KeepAliveTimeout 15
+
+# prefork MPM
+StartServers         5
+MinSpareServers      5
+MaxSpareServers     10
+MaxClients         150
+MaxRequestsPerChild  0
+
+# Uncomment to bind to a specific address
+#Listen 12.34.56.78:80
+Listen 80
+
+#ExtendedStatus On
+
+User www-data
+Group www-data
+#ServerAdmin apache@whatever.com
+#ServerName new.host.name:80
+
+UseCanonicalName Off
+DocumentRoot "/usr/local/apache/htdocs"
+
+<Directory />
+ Options FollowSymLinks
+ AllowOverride None
+</Directory>
+
+<Directory "/usr/local/apache/htdocs">
+ Options Indexes FollowSymLinks
+ AllowOverride None
+ Order allow,deny
+ Allow from all
+</Directory>
+
+DirectoryIndex index.html index.html.var
+AccessFileName .htaccess
+
+# The following lines prevent .htaccess and .htpasswd files from being 
+# viewed by Web clients. 
+<Files ~ "^\.ht">
+ Order allow,deny
+ Deny from all
+</Files>
+
+TypesConfig conf/mime.types
+DefaultType text/plain
+
+HostnameLookups Off
+
+ErrorLog /var/log/apache/error_log
+LogLevel warn
+LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+LogFormat "%h %l %u %t \"%r\" %>s %b" common
+LogFormat "%{Referer}i -> %U" referer
+LogFormat "%{User-agent}i" agent
+# You need to enable mod_logio.c to use %I and %O
+#LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" %I %O" combinedio
+CustomLog /var/log/apache/access_log common
+#CustomLog /var/log/apache/referer_log referer
+#CustomLog /var/log/apache/agent_log agent
+#CustomLog /var/log/apache/access_log combined
+
+ServerTokens Full
+ServerSignature On
+
+Alias /icons/ "/usr/local/apache/icons/"
+<Directory "/usr/local/apache/icons">
+ Options Indexes MultiViews
+ AllowOverride None
+ Order allow,deny
+ Allow from all
+</Directory>
+
+Alias /manual "/usr/local/apache/manual"
+<Directory "/usr/local/apache/manual">
+ Options Indexes FollowSymLinks MultiViews IncludesNoExec
+ AddOutputFilter Includes html
+ AllowOverride None
+ Order allow,deny
+ Allow from all
+</Directory>
+
+ScriptAlias /cgi-bin/ "/usr/local/apache/cgi-bin/"
+<Directory "/usr/local/apache/cgi-bin">
+ AllowOverride None
+ Options None
+ Order allow,deny
+ Allow from all
+</Directory>
+
+IndexOptions FancyIndexing VersionSort
+
+AddIconByEncoding (CMP,/icons/compressed.gif) x-compress x-gzip
+
+AddIconByType (TXT,/icons/text.gif) text/*
+AddIconByType (IMG,/icons/image2.gif) image/*
+AddIconByType (SND,/icons/sound2.gif) audio/*
+AddIconByType (VID,/icons/movie.gif) video/*
+
+AddIcon /icons/binary.gif .bin .exe
+AddIcon /icons/binhex.gif .hqx
+AddIcon /icons/tar.gif .tar
+AddIcon /icons/world2.gif .wrl .wrl.gz .vrml .vrm .iv
+AddIcon /icons/compressed.gif .Z .z .tgz .gz .zip
+AddIcon /icons/a.gif .ps .ai .eps
+AddIcon /icons/layout.gif .html .shtml .htm .pdf
+AddIcon /icons/text.gif .txt
+AddIcon /icons/c.gif .c
+AddIcon /icons/p.gif .pl .py
+AddIcon /icons/f.gif .for
+AddIcon /icons/dvi.gif .dvi
+AddIcon /icons/uuencoded.gif .uu
+AddIcon /icons/script.gif .conf .sh .shar .csh .ksh .tcl
+AddIcon /icons/tex.gif .tex
+AddIcon /icons/bomb.gif core
+
+AddIcon /icons/back.gif ..
+AddIcon /icons/hand.right.gif README
+AddIcon /icons/folder.gif ^^DIRECTORY^^
+AddIcon /icons/blank.gif ^^BLANKICON^^
+
+DefaultIcon /icons/unknown.gif
+
+ReadmeName README.html
+HeaderName HEADER.html
+
+IndexIgnore .??* *~ *# HEADER* RCS CVS *,v *,t
+
+AddEncoding x-compress Z
+AddEncoding x-gzip gz tgz
+
+AddDefaultCharset ISO-8859-1
+AddCharset ISO-8859-1  .iso8859-1  .latin1
+AddCharset ISO-2022-JP .iso2022-jp .jis
+AddCharset ISO-2022-KR .iso2022-kr .kis
+AddCharset ISO-2022-CN .iso2022-cn .cis
+AddCharset Big5        .Big5       .big5
+AddCharset EUC-TW      .euc-tw
+AddCharset EUC-JP      .euc-jp
+AddCharset EUC-KR      .euc-kr
+AddCharset shift_jis   .sjis
+
+AddType application/x-tar .tgz
+AddType image/x-icon .ico
+
+#AddHandler cgi-script .cgi
+#AddHandler send-as-is asis
+AddHandler type-map var
+
+#AddType text/html .shtml
+#AddOutputFilter INCLUDES .shtml
+
+#ErrorDocument 500 "The server made a boo boo."
+#ErrorDocument 404 /missing.html
+#ErrorDocument 404 "/cgi-bin/missing_handler.pl"
+#ErrorDocument 402 http://www.example.com/subscription_info.html
+
+BrowserMatch "Mozilla/2" nokeepalive
+BrowserMatch "MSIE 4\.0b2;" nokeepalive downgrade-1.0 force-response-1.0
+BrowserMatch "RealPlayer 4\.0" force-response-1.0
+BrowserMatch "Java/1\.0" force-response-1.0
+BrowserMatch "JDK/1\.0" force-response-1.0
+BrowserMatch "Microsoft Data Access Internet Publishing Provider" redirect-carefully
+BrowserMatch "^WebDrive" redirect-carefully
+BrowserMatch "^WebDAVFS/1.[012]" redirect-carefully
+BrowserMatch "^gnome-vfs" redirect-carefully
+
+<Location /server-status>
+ SetHandler server-status
+ Order deny,allow
+ Deny from all
+ # Should be domain name rather than all but is running on laptop right now
+ Allow from all
+</Location>
+
+<Location /server-info>
+ SetHandler server-info
+ Order deny,allow
+ Deny from all
+ # Should be domain name rather than all but is running on laptop right now
+ Allow from all
+</Location>
+
+<IfModule mod_ssl.c>
+Include /usr/local/apache/conf/ssl.conf
+</IfModule>
+
+
+# Use name-based virtual hosting.
+#NameVirtualHost *
+
+# VirtualHost example:
+# Almost any Apache directive may go into a VirtualHost container.
+# The first VirtualHost section is used for requests without a known
+# server name.
+
+#<VirtualHost *>
+#    ServerAdmin webmaster@dummy-host.example.com
+#    DocumentRoot /www/docs/dummy-host.example.com
+#    ServerName dummy-host.example.com
+#    ErrorLog /var/log/apache/dummy-host.example.com-error_log
+#    CustomLog /var/log/apache/dummy-host.example.com-access_log common
+#</VirtualHost>
